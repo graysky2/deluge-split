@@ -8,14 +8,16 @@ _pkgbase=deluge
 pkgname=("${_pkgbase}-common" "${_pkgbase}-daemon" "${_pkgbase}-gtk" "${_pkgbase}-web" "${_pkgbase}-console")
 pkgver=1.3.15+14+gb8e5ebe82
 _major=1.3.15
-pkgrel=1
+pkgrel=2
 arch=('any')
 url="http://deluge-torrent.org/"
 license=('GPL3')
 makedepends=(intltool pygtk librsvg python2-mako git)
 _commit=b8e5ebe8220c8365e186127e381a2d2dbaf9e460  # 1.3-stable
-source=("git://git.deluge-torrent.org/deluge.git#commit=$_commit"
-'untag-build.patch' 'deluged.service' 'deluge-web.service')
+source=(
+"git://git.deluge-torrent.org/deluge.git#commit=$_commit"
+'untag-build.patch' 'deluged.service' 'deluge-web.service'
+)
 sha256sums=('SKIP'
             'fbd17f13765f5560bab01a81a42aff0f2f757a4a6fa29379ae31d95b9721e4f2'
             '58a451bb6cf4fe6ff78a4fb71d51c5910340a2de032ff435c3c7365015ab538f'
@@ -80,6 +82,8 @@ package_deluge-gtk() {
   depends=("deluge-common=${pkgver}" pygtk librsvg python2-notify)
   conflicts=(deluge)
   groups=("$pkgbase")
+  optdepends=('python2-pygame: audible notifications'
+              'python2-libappindicator: appindicator notifications')
 
   cd "$_pkgbase"
   python2 setup.py install --prefix=/usr --root="$pkgdir" --optimize=1

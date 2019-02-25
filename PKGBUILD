@@ -8,7 +8,7 @@ _pkgbase=deluge
 pkgname=("${_pkgbase}-common" "${_pkgbase}-daemon" "${_pkgbase}-gtk" "${_pkgbase}-web" "${_pkgbase}-console")
 pkgver=1.3.15+18+ge050905b2
 _major=1.3.15
-pkgrel=1
+pkgrel=2
 arch=('any')
 url="https://deluge-torrent.org/"
 license=('GPL3')
@@ -16,16 +16,21 @@ makedepends=(intltool pygtk librsvg python2-mako git)
 _commit=e050905b291f4d9b417270e38f2aa04366057919  # 1.3-stable
 source=(
 "git://git.deluge-torrent.org/deluge.git#commit=$_commit"
-'untag-build.patch' 'deluged.service' 'deluge-web.service'
+00-untag-build.patch
+01-unfuck-tray-icon.patch
+deluged.service deluge-web.service
 )
 sha256sums=('SKIP'
             'fbd17f13765f5560bab01a81a42aff0f2f757a4a6fa29379ae31d95b9721e4f2'
+            '6538184a73d3ecf0b144ba2300862fc1d7db2b569b02aa4af7d6abe83f3fc65a'
             '58a451bb6cf4fe6ff78a4fb71d51c5910340a2de032ff435c3c7365015ab538f'
             'c3f2d6ad5bc9de5ffd9973d92badbe04a9ecf12c0c575e13d505a96add03275a')
 
 prepare() {
   cd $_pkgbase
-  patch -Np1 -i ../untag-build.patch
+  patch -Np1 -i ../00-untag-build.patch
+  patch -Np1 -i ../01-unfuck-tray-icon.patch
+
   sed -i '1s/python$/&2/' \
     deluge/ui/Win32IconImagePlugin.py \
     deluge/ui/web/gen_gettext.py

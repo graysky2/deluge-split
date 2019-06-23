@@ -6,140 +6,170 @@
 pkgbase=deluge-split
 _pkgbase=deluge
 pkgname=("${_pkgbase}-common" "${_pkgbase}-daemon" "${_pkgbase}-gtk" "${_pkgbase}-web" "${_pkgbase}-console")
-pkgver=1.3.15+18+ge050905b2
-_major=1.3.15
-pkgrel=2
+pkgver=2.0.3
+pkgrel=1
 arch=('any')
 url="https://deluge-torrent.org/"
 license=('GPL3')
-makedepends=(intltool pygtk librsvg python2-mako git)
-_commit=e050905b291f4d9b417270e38f2aa04366057919  # 1.3-stable
-source=(
-"git://git.deluge-torrent.org/deluge.git#commit=$_commit"
-00-untag-build.patch
-01-unfuck-tray-icon.patch
-deluged.service deluge-web.service
+makedepends=(
+  python-setuptools
+  intltool
+  gtk3
+  python-gobject
+  python-cairo
+  librsvg
+  libappindicator-gtk3
+  #python-pygame
+  libnotify
 )
-sha256sums=('SKIP'
-            'fbd17f13765f5560bab01a81a42aff0f2f757a4a6fa29379ae31d95b9721e4f2'
-            '6538184a73d3ecf0b144ba2300862fc1d7db2b569b02aa4af7d6abe83f3fc65a'
-            '58a451bb6cf4fe6ff78a4fb71d51c5910340a2de032ff435c3c7365015ab538f'
-            'c3f2d6ad5bc9de5ffd9973d92badbe04a9ecf12c0c575e13d505a96add03275a')
-
-prepare() {
-  cd $_pkgbase
-  patch -Np1 -i ../00-untag-build.patch
-  patch -Np1 -i ../01-unfuck-tray-icon.patch
-
-  sed -i '1s/python$/&2/' \
-    deluge/ui/Win32IconImagePlugin.py \
-    deluge/ui/web/gen_gettext.py
-}
-
-pkgver() {
-  cd "$_pkgbase"
-  git describe | sed 's/^deluge-//;s/-/+/g'
-}
+source=(https://ftp.osuosl.org/pub/deluge/source/2.0/$_pkgbase-$pkgver.tar.xz)
+sha256sums=('7e7ae8e6ca2a2bf0d487227cecf81e27332f0b92b567cc2bda38e47d859da891')
 
 build() {
-  cd "$_pkgbase"
-  python2 setup.py build
+  cd "$_pkgbase-$pkgver"
+  python setup.py build
+
+  # this is the most simple hack I can think up for splitting
+  # if you know of a more elegant or cleaner way, send a PR please
+  mkdir ../staging
+  python setup.py install --root="../staging" --optimize=1 --skip-build
 }
 
 package_deluge-common() {
   pkgdesc="A BitTorrent client with multiple user interfaces in a client/server model"
-  depends=(python2-xdg                      python2-twisted python2-pyopenssl
-  python2-chardet python2-setuptools python2-service-identity)
+  depends=(
+  # Follows DEPENDS.md
+  'python-twisted>=17.1' python-service-identity python-idna
+  'openssl>=1.0.1'
+  python-pyopenssl
+  'python-rencode>=1.0.2'
+  python-xdg
+  xdg-utils
+  python-six
+  'python-zope-interface>=4.4.2'
+  python-chardet
+  python-setproctitle
+  python-pillow
+  python-dbus
+  python-mako)
+  optdepends=('python-distro: OS platform information')
   conflicts=('deluge')
   groups=("$pkgbase")
 
-  cd "$_pkgbase"
-  python2 setup.py install --prefix=/usr --root="$pkgdir" --optimize=1
+  cd "staging"
 
-  rm -rf "$pkgdir"/usr/bin/
-  rm -rf "$pkgdir"/usr/share/
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge/ui/{web,gtkui,console}
+  install -pd "$pkgdir/usr/bin"
+  mv usr/bin/deluge "$pkgdir/usr/bin"
+
+  install -pd "$pkgdir/usr/share/man/man1"
+  mv usr/share/man/man1/deluge.1 "$pkgdir/usr/share/man/man1"
+
+  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge-2.0.3-py3.7.egg-info"
+  mv usr/lib/python3.7/site-packages/deluge-2.0.3-py3.7.egg-info/ "$pkgdir/usr/lib/python3.7/site-packages"
+
+  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  mv usr/lib/python3.7/site-packages/deluge/core "$pkgdir/usr/lib/python3.7/site-packages/deluge"
+  mv usr/lib/python3.7/site-packages/deluge/i18n "$pkgdir/usr/lib/python3.7/site-packages/deluge"
+  mv usr/lib/python3.7/site-packages/deluge/plugins "$pkgdir/usr/lib/python3.7/site-packages/deluge"
+  mv usr/lib/python3.7/site-packages/deluge/__pycache__ "$pkgdir/usr/lib/python3.7/site-packages/deluge"
+  mv usr/lib/python3.7/site-packages/deluge/*.py "$pkgdir/usr/lib/python3.7/site-packages/deluge"
+
+  mv usr/lib/python3.7/site-packages/deluge/ui/data "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  mv usr/lib/python3.7/site-packages/deluge/ui/__pycache__ "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  mv usr/lib/python3.7/site-packages/deluge/ui/*.py "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
 }
 
 package_deluge-daemon() {
   pkgdesc="Deluge backend"
-  depends=(deluge-common libtorrent-rasterbar)
+  depends=(deluge-common 'libtorrent-rasterbar>=1.1.1' 'python-geoip')
   conflicts=(deluge)
   groups=("$pkgbase")
 
-  cd "$_pkgbase"
-  python2 setup.py install --prefix=/usr --root="$pkgdir" --optimize=1
+  cd "staging"
 
-  rm -f  "$pkgdir"/usr/bin/deluge-{gtk,web,console}
-  rm -f  "$pkgdir"/usr/share/man/man1/deluge-{gtk,web,console}.1
-  rm -rf "$pkgdir"/usr/lib/
-  rm -rf "$pkgdir"/usr/share/{icons,pixmaps,applications}
+  install -pd "$pkgdir/usr/bin"
+  mv usr/bin/deluged "$pkgdir/usr/bin"
 
-  install -Dm644 ../deluged.service "$pkgdir"/usr/lib/systemd/system/deluged.service
+  install -pd "$pkgdir/usr/share/man/man1"
+  mv usr/share/man/man1/deluged.1 "$pkgdir/usr/share/man/man1"
+
+  cd "../$_pkgbase-$pkgver"
+
+  install -Dt "$pkgdir/usr/lib/systemd/system" \
+    -m644 packaging/systemd/deluged.service
+  install -Dt "$pkgdir/usr/lib/systemd/system/deluged.service.d" \
+    -m644 packaging/systemd/user.conf
+
   echo 'u deluge - "Deluge BitTorrent daemon" /srv/deluge' |
-    install -Dm644 /dev/stdin "$pkgdir/usr/lib/sysusers.d/deluge.conf"
-  echo 'd /srv/deluge 0775 deluge deluge' |
-    install -Dm644 /dev/stdin "$pkgdir/usr/lib/tmpfiles.d/deluge.conf"
+    install -Dm644 /dev/stdin "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"
+  echo 'd /srv/deluge 0770 deluge deluge' |
+    install -Dm644 /dev/stdin "$pkgdir/usr/lib/tmpfiles.d/$pkgname.conf"
 }
 
 package_deluge-gtk() {
   pkgdesc="Deluge GTK frontend"
-  depends=("deluge-common=${pkgver}" pygtk librsvg python2-notify)
+  depends=("deluge-common=${pkgver}"
+  gtk3
+  python-gobject
+  python-cairo
+  librsvg)
+  optdepends=('libappindicator-gtk3: allow menu via Ayatana indicators'
+  #'python-pygame: audible notifications'
+  'libnotify: desktop notifications')
   conflicts=(deluge)
   groups=("$pkgbase")
-  optdepends=('python2-pygame: audible notifications'
-              'python2-libappindicator: appindicator notifications')
 
-  cd "$_pkgbase"
-  python2 setup.py install --prefix=/usr --root="$pkgdir" --optimize=1
+  cd "staging"
 
-  find   "$pkgdir"/usr/bin ! -name 'deluge-gtk' -type f -exec rm -f {} +
-  find   "$pkgdir/usr/share/man/man1" ! -name 'deluge-gtk.1' -type f -exec rm -f {} +
-  rm -r  "$pkgdir"/usr/lib/python2.7/site-packages/deluge/*.{py,pyc,pyo}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge/{i18n,data,core,plugins}
-  rm -f  "$pkgdir"/usr/lib/python2.7/site-packages/deluge/ui/*.{py,pyc,pyo}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge/ui/{web,console}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge-$_major-py2.7.egg-info/
+  install -pd "$pkgdir/usr/bin"
+  mv usr/bin/deluge-gtk "$pkgdir/usr/bin"
+
+  install -pd "$pkgdir/usr/share/man/man1"
+  mv usr/share/man/man1/deluge-gtk.1 "$pkgdir/usr/share/man/man1"
+
+  mv usr/share/appdata "$pkgdir/usr/share"
+  mv usr/share/applications "$pkgdir/usr/share"
+  mv usr/share/icons "$pkgdir/usr/share"
+  mv usr/share/pixmaps "$pkgdir/usr/share"
+
+  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  mv usr/lib/python3.7/site-packages/deluge/ui/gtk3 "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
 }
 
 package_deluge-web() {
   pkgdesc="Deluge web frontend"
-  depends=("deluge-common=${pkgver}" python2-mako)
-  conflicts=(deluge)
-  groups=("$pkgbase")
-
-  cd "$_pkgbase"
-  python2 setup.py install --prefix=/usr --root="$pkgdir" --optimize=1
-
-  find   "$pkgdir/usr/bin" ! -name 'deluge-web' -type f -exec rm -f {} +
-  find   "$pkgdir/usr/share/man/man1" ! -name 'deluge-web.1' -type f -exec rm -f {} +
-  rm -f  "$pkgdir"/usr/lib/python2.7/site-packages/deluge/*.{py,pyc,pyo}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge/{i18n,data,core,plugins}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge/ui/{gtkui,console}
-  rm -f  "$pkgdir"/usr/lib/python2.7/site-packages/deluge/ui/*.{py,pyc,pyo}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge-$_major-py2.7.egg-info/
-  rm -rf "$pkgdir"/usr/share/{icons,pixmaps,applications}
-
-  install -Dm644 ../deluge-web.service "$pkgdir/usr/lib/systemd/system/deluge-web.service"
-}
-
-package_deluge-console() {
-  pkgdesc="Deluge CLI frontend"
   depends=("deluge-common=${pkgver}")
   conflicts=(deluge)
   groups=("$pkgbase")
 
-  cd "$_pkgbase"
-  python2 setup.py install --prefix=/usr --root="$pkgdir" --optimize=1
+  cd "staging"
 
-  find   "$pkgdir/usr/bin" ! -name 'deluge-console' -type f -exec rm -f {} +
-  find   "$pkgdir/usr/share/man/man1" ! -name 'deluge-console.1' -type f -exec rm -f {} +
-  rm -f  "$pkgdir"/usr/lib/python2.7/site-packages/deluge/*.{py,pyc,pyo}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge/{i18n,data,core,plugins}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge/ui/{gtkui,web}
-  rm -f  "$pkgdir"/usr/lib/python2.7/site-packages/deluge/ui/*.{py,pyc,pyo}
-  rm -rf "$pkgdir"/usr/lib/python2.7/site-packages/deluge-$_major-py2.7.egg-info/
-  rm -rf "$pkgdir"/usr/share/{icons,pixmaps,applications}
+  install -pd "$pkgdir/usr/bin"
+  mv usr/bin/deluge-web "$pkgdir/usr/bin"
+
+  install -pd "$pkgdir/usr/share/man/man1"
+  mv usr/share/man/man1/deluge-web.1 "$pkgdir/usr/share/man/man1"
+
+  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  mv usr/lib/python3.7/site-packages/deluge/ui/web "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+}
+
+package_deluge-console() {
+  pkgdesc="Deluge CLI frontend"
+  depends=("deluge-common=${pkgver}" 'libtorrent-rasterbar>=1.1.1')
+  conflicts=(deluge)
+  groups=("$pkgbase")
+
+  cd "staging"
+
+  install -pd "$pkgdir/usr/bin"
+  mv usr/bin/deluge-console "$pkgdir/usr/bin"
+
+  install -pd "$pkgdir/usr/share/man/man1"
+  mv usr/share/man/man1/deluge-console.1 "$pkgdir/usr/share/man/man1"
+
+  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  mv usr/lib/python3.7/site-packages/deluge/ui/console "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
 }
 
 # vim:set ts=2 sw=2 et:

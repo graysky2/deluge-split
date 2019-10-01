@@ -7,7 +7,7 @@ pkgbase=deluge-split
 _pkgbase=deluge
 pkgname=("${_pkgbase}-common" "${_pkgbase}-daemon" "${_pkgbase}-gtk" "${_pkgbase}-web" "${_pkgbase}-console")
 pkgver=2.0.3
-pkgrel=1
+pkgrel=2
 arch=('any')
 url="https://deluge-torrent.org/"
 license=('GPL3')
@@ -96,8 +96,10 @@ package_deluge-daemon() {
   cd "../$_pkgbase-$pkgver"
 
   install -Dt "$pkgdir/usr/lib/systemd/system" \
-    -m644 packaging/systemd/deluged.service
+    -m644 packaging/systemd/*.service
   install -Dt "$pkgdir/usr/lib/systemd/system/deluged.service.d" \
+    -m644 packaging/systemd/user.conf
+  install -Dt "$pkgdir/usr/lib/systemd/system/deluge-web.service.d" \
     -m644 packaging/systemd/user.conf
 
   echo 'u deluge - "Deluge BitTorrent daemon" /srv/deluge' |

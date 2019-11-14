@@ -7,7 +7,7 @@ pkgbase=deluge-split
 _pkgbase=deluge
 pkgname=("${_pkgbase}-common" "${_pkgbase}-daemon" "${_pkgbase}-gtk" "${_pkgbase}-web" "${_pkgbase}-console")
 pkgver=2.0.3
-pkgrel=2
+pkgrel=4
 arch=('any')
 url="https://deluge-torrent.org/"
 license=('GPL3')
@@ -64,19 +64,19 @@ package_deluge-common() {
   install -pd "$pkgdir/usr/share/man/man1"
   mv usr/share/man/man1/deluge.1 "$pkgdir/usr/share/man/man1"
 
-  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge-2.0.3-py3.7.egg-info"
-  mv usr/lib/python3.7/site-packages/deluge-2.0.3-py3.7.egg-info/ "$pkgdir/usr/lib/python3.7/site-packages"
+  install -pd "$pkgdir/usr/lib/python3.8/site-packages/deluge-2.0.3-py3.8.egg-info"
+  mv usr/lib/python3.8/site-packages/deluge-2.0.3-py3.8.egg-info/ "$pkgdir/usr/lib/python3.8/site-packages"
 
-  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
-  mv usr/lib/python3.7/site-packages/deluge/core "$pkgdir/usr/lib/python3.7/site-packages/deluge"
-  mv usr/lib/python3.7/site-packages/deluge/i18n "$pkgdir/usr/lib/python3.7/site-packages/deluge"
-  mv usr/lib/python3.7/site-packages/deluge/plugins "$pkgdir/usr/lib/python3.7/site-packages/deluge"
-  mv usr/lib/python3.7/site-packages/deluge/__pycache__ "$pkgdir/usr/lib/python3.7/site-packages/deluge"
-  mv usr/lib/python3.7/site-packages/deluge/*.py "$pkgdir/usr/lib/python3.7/site-packages/deluge"
+  install -pd "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
+  mv usr/lib/python3.8/site-packages/deluge/core "$pkgdir/usr/lib/python3.8/site-packages/deluge"
+  mv usr/lib/python3.8/site-packages/deluge/i18n "$pkgdir/usr/lib/python3.8/site-packages/deluge"
+  mv usr/lib/python3.8/site-packages/deluge/plugins "$pkgdir/usr/lib/python3.8/site-packages/deluge"
+  mv usr/lib/python3.8/site-packages/deluge/__pycache__ "$pkgdir/usr/lib/python3.8/site-packages/deluge"
+  mv usr/lib/python3.8/site-packages/deluge/*.py "$pkgdir/usr/lib/python3.8/site-packages/deluge"
 
-  mv usr/lib/python3.7/site-packages/deluge/ui/data "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
-  mv usr/lib/python3.7/site-packages/deluge/ui/__pycache__ "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
-  mv usr/lib/python3.7/site-packages/deluge/ui/*.py "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  mv usr/lib/python3.8/site-packages/deluge/ui/data "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
+  mv usr/lib/python3.8/site-packages/deluge/ui/__pycache__ "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
+  mv usr/lib/python3.8/site-packages/deluge/ui/*.py "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
 }
 
 package_deluge-daemon() {
@@ -134,8 +134,8 @@ package_deluge-gtk() {
   mv usr/share/icons "$pkgdir/usr/share"
   mv usr/share/pixmaps "$pkgdir/usr/share"
 
-  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
-  mv usr/lib/python3.7/site-packages/deluge/ui/gtk3 "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  install -pd "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
+  mv usr/lib/python3.8/site-packages/deluge/ui/gtk3 "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
 }
 
 package_deluge-web() {
@@ -152,8 +152,8 @@ package_deluge-web() {
   install -pd "$pkgdir/usr/share/man/man1"
   mv usr/share/man/man1/deluge-web.1 "$pkgdir/usr/share/man/man1"
 
-  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
-  mv usr/lib/python3.7/site-packages/deluge/ui/web "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  install -pd "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
+  mv usr/lib/python3.8/site-packages/deluge/ui/web "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
 }
 
 package_deluge-console() {
@@ -170,8 +170,8 @@ package_deluge-console() {
   install -pd "$pkgdir/usr/share/man/man1"
   mv usr/share/man/man1/deluge-console.1 "$pkgdir/usr/share/man/man1"
 
-  install -pd "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
-  mv usr/lib/python3.7/site-packages/deluge/ui/console "$pkgdir/usr/lib/python3.7/site-packages/deluge/ui"
+  install -pd "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
+  mv usr/lib/python3.8/site-packages/deluge/ui/console "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
 }
 
 # vim:set ts=2 sw=2 et:

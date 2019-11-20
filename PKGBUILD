@@ -6,14 +6,15 @@
 pkgbase=deluge-split
 _pkgbase=deluge
 pkgname=("${_pkgbase}-common" "${_pkgbase}-daemon" "${_pkgbase}-gtk" "${_pkgbase}-web" "${_pkgbase}-console")
-pkgver=2.0.3
-pkgrel=4
+pkgver=2.0.3+23+g5f1eada3e
+pkgrel=1
 arch=('any')
 url="https://deluge-torrent.org/"
 license=('GPL3')
 makedepends=(
   python-setuptools
   intltool
+  git
   gtk3
   python-gobject
   python-cairo
@@ -22,11 +23,28 @@ makedepends=(
   #python-pygame
   libnotify
 )
-source=(https://ftp.osuosl.org/pub/deluge/source/2.0/$_pkgbase-$pkgver.tar.xz)
-sha256sums=('7e7ae8e6ca2a2bf0d487227cecf81e27332f0b92b567cc2bda38e47d859da891')
+_commit=5f1eada3eae215f0fd489000e97792c892fb7b17  # develop
+source=("git://git.deluge-torrent.org/deluge.git#commit=$_commit"
+#https://ftp.osuosl.org/pub/deluge/source/2.0/$_pkgbase-$pkgver.tar.xz
+py3.8.diff)
+sha256sums=('SKIP'
+            'a0225692e5c312d7980f0047f8e840803e8e05d6c525464ae9f335f56e205297')
+
+pkgver() {
+  cd deluge
+  git describe | sed 's/^deluge-//;s/-/+/g'
+}
+
+prepare() {
+  cd deluge
+
+  # Remove a broken logging.Logger.findCaller override
+  # https://bugs.archlinux.org/task/64571
+  patch -Np1 -i ../py3.8.diff
+}
 
 build() {
-  cd "$_pkgbase-$pkgver"
+  cd deluge
   python setup.py build
 
   # this is the most simple hack I can think up for splitting
@@ -57,6 +75,7 @@ package_deluge-common() {
   groups=("$pkgbase")
 
   cd "staging"
+  _custver="deluge-2.0.4.dev20-py3.8.egg-info"
 
   install -pd "$pkgdir/usr/bin"
   mv usr/bin/deluge "$pkgdir/usr/bin"
@@ -64,8 +83,8 @@ package_deluge-common() {
   install -pd "$pkgdir/usr/share/man/man1"
   mv usr/share/man/man1/deluge.1 "$pkgdir/usr/share/man/man1"
 
-  install -pd "$pkgdir/usr/lib/python3.8/site-packages/deluge-2.0.3-py3.8.egg-info"
-  mv usr/lib/python3.8/site-packages/deluge-2.0.3-py3.8.egg-info/ "$pkgdir/usr/lib/python3.8/site-packages"
+  install -pd "$pkgdir/usr/lib/python3.8/site-packages"
+  mv usr/lib/python3.8/site-packages/"$_custver"/ "$pkgdir/usr/lib/python3.8/site-packages"
 
   install -pd "$pkgdir/usr/lib/python3.8/site-packages/deluge/ui"
   mv usr/lib/python3.8/site-packages/deluge/core "$pkgdir/usr/lib/python3.8/site-packages/deluge"
@@ -93,7 +112,7 @@ package_deluge-daemon() {
   install -pd "$pkgdir/usr/share/man/man1"
   mv usr/share/man/man1/deluged.1 "$pkgdir/usr/share/man/man1"
 
-  cd "../$_pkgbase-$pkgver"
+  cd "../deluge"
 
   install -Dt "$pkgdir/usr/lib/systemd/system" \
     -m644 packaging/systemd/*.service

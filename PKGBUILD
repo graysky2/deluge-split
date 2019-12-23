@@ -6,7 +6,7 @@
 pkgbase=deluge-split
 _pkgbase=deluge
 pkgname=("${_pkgbase}-common" "${_pkgbase}-daemon" "${_pkgbase}-gtk" "${_pkgbase}-web" "${_pkgbase}-console")
-pkgver=2.0.3+23+g5f1eada3e
+pkgver=2.0.4.dev23+g2f1c008a2
 pkgrel=1
 arch=('any')
 url="https://deluge-torrent.org/"
@@ -23,24 +23,19 @@ makedepends=(
   #python-pygame
   libnotify
 )
-_commit=5f1eada3eae215f0fd489000e97792c892fb7b17  # develop
+_commit=2f1c008a26b50ab3487bd03bcabb39347d441f23  # develop
 source=("git://git.deluge-torrent.org/deluge.git#commit=$_commit"
 #https://ftp.osuosl.org/pub/deluge/source/2.0/$_pkgbase-$pkgver.tar.xz
-py3.8.diff)
-sha256sums=('SKIP'
-            'a0225692e5c312d7980f0047f8e840803e8e05d6c525464ae9f335f56e205297')
+)
+sha256sums=('SKIP')
 
 pkgver() {
   cd deluge
-  git describe | sed 's/^deluge-//;s/-/+/g'
+  git describe --tags | sed 's/^deluge-//;s/dev0-/dev/;s/-/+/g'
 }
 
 prepare() {
   cd deluge
-
-  # Remove a broken logging.Logger.findCaller override
-  # https://bugs.archlinux.org/task/64571
-  patch -Np1 -i ../py3.8.diff
 }
 
 build() {
@@ -75,7 +70,7 @@ package_deluge-common() {
   groups=("$pkgbase")
 
   cd "staging"
-  _custver="deluge-2.0.4.dev20-py3.8.egg-info"
+  _custver="deluge-2.0.4.dev23-py3.8.egg-info"
 
   install -pd "$pkgdir/usr/bin"
   mv usr/bin/deluge "$pkgdir/usr/bin"
